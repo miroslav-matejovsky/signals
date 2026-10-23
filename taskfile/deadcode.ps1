@@ -1,4 +1,4 @@
-# Check for unreachable functions in cmd entry points.
+# Check for unreachable functions from the main entry point.
 #
 # Use the allowlist for three cases:
 #  - functions staged for future use that are not reachable yet (temporary);
@@ -6,12 +6,12 @@
 #    another package from implementing the interface; calling it would defeat the
 #    point, so it is unreachable by construction and always will be;
 #  - test-support API: a function that exists so a test can assert something about
-#    the production code itself. It is unreachable from a cmd entry point by nature,
+#    the production code itself. It is unreachable from the main entry point by nature,
 #    and the alternative (dropping it) means dropping the assertion it enables.
 $allow = @(
 )
 
-$out = deadcode ./cmd/... 2>&1
+$out = deadcode . 2>&1
 $exit = $LASTEXITCODE
 
 $lines = $out | Out-String -Stream | Where-Object { $_.Trim() -ne '' }

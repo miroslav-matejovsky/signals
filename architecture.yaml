@@ -1,0 +1,51 @@
+# Example architecture declaration for Signals.
+#
+# Paths are slash-separated and relative to the repository root.
+# In patterns, "**" matches zero or more directories; other segments use
+# Go path.Match syntax ("*", "?", "[...]").
+
+systems:
+  commerce:
+    contexts:
+      payments:
+        # A file belongs to this context when its path matches one of the
+        # paths below, or, when no context path matches, when it is in one of
+        # these repositories. Repository names are top-level directory names.
+        repositories:
+          - payments
+        paths:
+          - "payments/**"
+        # A component owns its directory and everything below it. Creating or
+        # removing that directory raises COMPONENT_CREATED_OR_REMOVED.
+        components:
+          payments-api:
+            path: payments/api
+          fraud-detection:
+            path: payments/fraud
+
+      customer:
+        repositories:
+          - customer
+        paths:
+          - "customer/**"
+        components:
+          customer-profile:
+            path: customer/profile
+
+# Every artifact kind must be declared. An empty list ([]) detects nothing.
+artifacts:
+  public-contract:
+    - "**/openapi.yaml"
+    - "**/*.proto"
+
+  persistence-schema:
+    - "**/migrations/**"
+
+  deployment:
+    - "**/helm/**"
+    - "**/*.bicep"
+    - "**/*.tf"
+
+  security:
+    - "**/rbac.yaml"
+    - "**/*.rego"

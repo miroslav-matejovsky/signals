@@ -15,32 +15,23 @@ excludeFiles:
   - "^.*\/test\/.*$"
 
 # Third-party packages that components may use via 'canUse'.
-# Example for a real project:
-#
-# vendors:
-#   x-sync: { in: "golang.org/x/sync/**" }
-#   ergo:   { in: "ergo.services/ergo/**" }
+vendors:
+  yaml: { in: go.yaml.in/yaml/v3 }
 
 components:
-  cmd: { in: cmd }
-  # Example for a real project, one entry per domain package:
-  #
-  # orders:   { in: internal/orders }
-  # billing:  { in: internal/billing }
-  # platform: { in: internal/platform/** }
+  main:         { in: . }
+  collection:   { in: collection }
+  architecture: { in: architecture }
+  detection:    { in: detection }
+  attention:    { in: attention }
 
 deps:
-  # cmd is the composition root: it wires all components and vendors together.
-  cmd:
-    anyProjectDeps: true
-    anyVendorDeps: true
-  # Example for a real project, each component lists what it may import:
-  #
-  # orders:
-  #   mayDependOn: [platform]
-  #   canUse: [ergo]
-  # billing:
-  #   mayDependOn: [orders, platform]
-  #   canUse: [ergo, x-sync]
-  # platform:
-  #   canUse: [x-sync]
+  # main is the composition root: it wires the pipeline collection -> detection -> attention.
+  main:
+    mayDependOn: [collection, architecture, detection, attention]
+  architecture:
+    canUse: [yaml]
+  detection:
+    mayDependOn: [collection, architecture]
+  attention:
+    mayDependOn: [collection, detection]

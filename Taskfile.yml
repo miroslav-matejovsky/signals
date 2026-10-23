@@ -36,7 +36,7 @@ tasks:
       - echo vet done
 
   deadcode:
-    desc: Check for unreachable functions in cmd entry points
+    desc: Check for unreachable functions from the main entry point
     silent: true
     cmds:
       - pwsh -NoProfile -NonInteractive -File taskfile/deadcode.ps1
@@ -82,10 +82,10 @@ tasks:
 # ---- running stuff ----
 
   run:
-    desc: Run the application (for development)
+    desc: 'Run the application (for development), usage: task run -- scan --repo . --architecture architecture.yaml --since 7d'
     silent: true
     cmds:
-      - go run ./cmd/...
+      - go run . {{.CLI_ARGS}}
 
 # ---- release ----
 

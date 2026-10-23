@@ -6,15 +6,19 @@
 // attention candidates.
 //
 // This package owns:
-//   - signal aggregation
-//   - suppression
-//   - deduplication
-//   - prioritization
+//   - signal aggregation per ChangeSet
+//   - suppression of ChangeSets without signals
+//   - prioritization into HIGH and MEDIUM
 //   - attention candidates
-//   - architect disposition and feedback
 //
-// Every attention candidate must explain which signals caused it and preserve
-// provenance back to the underlying change.
+// Prioritization is deterministic: a candidate with two or more distinct
+// signal types is HIGH, a candidate with one is MEDIUM. There are no numerical
+// scores. A suppressed ChangeSet has unknown architectural impact; it is not
+// assessed as safe.
+//
+// Every attention candidate carries the signals that caused it, with their
+// evidence, and the commits of its ChangeSet, preserving provenance back to
+// the underlying change.
 //
 // The package should favor precision over completeness: increasing the number
 // of reported candidates at the cost of substantial noise is considered a
