@@ -1,0 +1,5 @@
+.env
+.env.ps1
+bin/
+.test-results/
+.gocache/

@@ -1,0 +1,92 @@
+version: "2"
+run:
+  # Allow a cold build when task all runs lint after clean.
+  timeout: 15m
+
+linters:
+  # Keep the standard checks and enable broadly useful bug, security, and style checks.
+  default: standard
+  enable:
+    - bodyclose     # HTTP response bodies must be closed
+    - containedctx  # contexts should not be stored in structs
+    - copyloopvar
+    - durationcheck # suspicious duration arithmetic
+    - errorlint
+    - exhaustive    # exhaustive handling of enum values in switch/select
+    - gocognit
+    - goconst       # repeated string literals that should be constants
+    - gocritic      # diagnostic, style, and performance checks
+    - gocyclo
+    - godot         # comment sentences must end with a period
+    - gosec         # security issues in Go source
+    - misspell      # spelling mistakes in identifiers, strings, and comments
+    - nakedret      # naked returns in long functions
+    - nestif        # deeply nested if-else chains
+    - nilerr        # returning nil after checking a non-nil error
+    - nilnil
+    - noctx         # HTTP requests should use context.Context
+    - nolintlint    # malformed or overly broad //nolint directives
+    - predeclared   # shadowing of predeclared identifiers
+    - revive        # common Go style and API conventions
+    - unconvert     # unnecessary type conversions
+    - unparam       # function parameters that never vary across callers
+
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+    # The upstream recommended range is 10-20; 20 is a flexible starting point.
+    gocognit:
+      min-complexity: 20
+    gocyclo:
+      min-complexity: 20
+    goconst:
+      ignore-tests: true
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - style
+        - performance
+    godot:
+      scope: declarations
+    nakedret:
+      max-func-lines: 30
+    nestif:
+      min-complexity: 5
+    revive:
+      rules:
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: exported
+        - name: if-return
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: range
+        - name: receiver-naming
+        - name: time-naming
+        - name: unexported-return
+        - name: var-declaration
+    gosec:
+      severity: medium
+      confidence: medium
+
+  exclusions:
+    # Match the Go generated-file convention: // Code generated ... DO NOT EDIT.
+    generated: strict
+    presets:
+      - common-false-positives
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+
+formatters:
+  exclusions:
+    generated: strict
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
