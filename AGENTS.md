@@ -19,7 +19,10 @@
 
 ## Documentation
 
-- Use root `README.md` for project overview and architecture.
+- Use root `README.md` as a user-friendly introduction: project purpose, rationale, and practical guidelines for using it.
+- Keep root `README.md` in plain language, with simple getting-started and common-usage guidance. Link to `docs/` for technical details.
+- Use `docs/` for architecture, design, implementation details, detailed setup, configuration reference, and troubleshooting.
+- Create or update `docs/README.md` as the index when adding technical documentation.
 - Read documentation before changing code.
 - Keep documentation close to code and synchronized with the implementation.
 - Outdated documentation is considered a defect.

@@ -1,8 +1,7 @@
 # Dev
 
-Working records used to understand and evolve this repository. They are not user or
-API documentation. The architecture overview belongs in the root `README.md`;
-package documentation belongs in each Go package's `doc.go`.
+Working records used to understand and evolve this repository. This is not user-facing or technical documentation.
+
 
 Each folder has a `README.md` describing its contents and expected format.
 
