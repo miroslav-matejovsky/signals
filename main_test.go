@@ -18,7 +18,7 @@ import (
 var now = time.Date(2026, 10, 23, 12, 0, 0, 0, time.UTC)
 
 // newRepository creates a Git repository named "commerce" whose history
-// exercises the example architecture.yaml, isolated from the user's and the
+// exercises examples/architecture.yaml, isolated from the user's and the
 // system's Git configuration. It returns the repository directory.
 func newRepository(t *testing.T) string {
 	t.Helper()
@@ -79,7 +79,7 @@ func scan(t *testing.T, args ...string) string {
 func TestScanText(t *testing.T) {
 	repo := newRepository(t)
 
-	out := scan(t, "scan", "--repo", repo, "--architecture", "architecture.yaml", "--since", "7d")
+	out := scan(t, "scan", "--repo", repo, "--architecture", "examples/architecture.yaml", "--since", "7d")
 
 	high := strings.Index(out, "HIGH  PAY-1421\n")
 	medium := strings.Index(out, "MEDIUM  ")
@@ -108,7 +108,7 @@ func TestScanText(t *testing.T) {
 func TestScanJSON(t *testing.T) {
 	repo := newRepository(t)
 
-	out := scan(t, "scan", "--repo", repo, "--architecture", "architecture.yaml", "--since", "7d", "--format", "json")
+	out := scan(t, "scan", "--repo", repo, "--architecture", "examples/architecture.yaml", "--since", "7d", "--format", "json")
 
 	var got struct {
 		Repository    string
@@ -150,13 +150,13 @@ func TestScanJSON(t *testing.T) {
 func TestScanWithoutCandidates(t *testing.T) {
 	repo := newRepository(t)
 
-	out := scan(t, "scan", "--repo", repo, "--architecture", "architecture.yaml", "--since", "12h")
+	out := scan(t, "scan", "--repo", repo, "--architecture", "examples/architecture.yaml", "--since", "12h")
 	require.Equal(t,
 		"Repository commerce: 0 change sets since 2026-10-23T00:00:00Z.\n"+
 			"0 attention candidates. 0 change sets without architectural signal: impact unknown, not assessed as safe.\n",
 		out)
 
-	out = scan(t, "scan", "--repo", repo, "--architecture", "architecture.yaml", "--since", "12h", "--format", "json")
+	out = scan(t, "scan", "--repo", repo, "--architecture", "examples/architecture.yaml", "--since", "12h", "--format", "json")
 	require.Contains(t, out, `"candidates": []`)
 }
 

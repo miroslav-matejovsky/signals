@@ -17,20 +17,20 @@ Requirements: Go 1.27 or later and `git` on `PATH`.
 
 ```sh
 go build -o bin/signals .
-bin/signals scan --repo . --architecture architecture.yaml --since 7d
+bin/signals scan --repo . --architecture examples/architecture.yaml --since 7d
 ```
 
 Without building:
 
 ```sh
-go run main.go scan --repo . --architecture architecture.yaml --since 7d
-task run -- scan --repo . --architecture architecture.yaml --since 7d
+go run main.go scan --repo . --architecture examples/architecture.yaml --since 7d
+task run -- scan --repo . --architecture examples/architecture.yaml --since 7d
 ```
 
 | Flag             | Required | Meaning                                                                    |
 | ---------------- | -------- | -------------------------------------------------------------------------- |
 | `--repo`         | yes      | Path inside a local Git repository.                                        |
-| `--architecture` | yes      | Architecture YAML file, see `architecture.yaml`.                           |
+| `--architecture` | yes      | Architecture YAML file, see `examples/architecture.yaml`.                  |
 | `--since`        | yes      | Length of the scan period ending now: whole days (`7d`) or a Go duration (`36h`). |
 | `--format`       | no       | `text` (default) or `json`.                                                |
 
@@ -85,14 +85,13 @@ Repository commerce: 3 change sets since 2026-10-16T12:00:00Z.
 
 ## Architecture File
 
-`architecture.yaml` is a complete, commented example. All patterns and paths are slash-separated and
-relative to the repository root. In patterns, `**` matches zero or more directories; other segments
-use Go `path.Match` syntax.
+An architecture file describes one repository. `examples/architecture.yaml` is a complete, commented
+example. All patterns and paths are slash-separated and relative to the repository root. In patterns,
+`**` matches zero or more directories; other segments use Go `path.Match` syntax.
 
-- **Systems and contexts.** A changed path belongs to the context whose `paths` match it. When no
-  context path matches, it belongs to the context listing the repository in `repositories`. The
-  repository name is the base name of the repository's top-level directory. A path that belongs to
-  two contexts at the same precedence is an ambiguous declaration and fails the scan.
+- **Systems and contexts.** Each context declares `paths`. A changed path belongs to the context
+  whose `paths` match it. A path that belongs to two contexts is an ambiguous declaration and fails
+  the scan.
 - **Components.** A component declares one directory `path` and owns everything below it.
   Components of a context must not nest.
 - **Artifacts.** Each of `public-contract`, `persistence-schema`, `deployment`, and `security` must be

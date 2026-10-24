@@ -56,9 +56,9 @@ func newEvidence(c collection.Change, reason string) Evidence {
 	return Evidence{Commit: c.Commit, Path: c.Path, Status: c.Status, Reason: reason}
 }
 
-// rule detects one signal type in a ChangeSet of the named repository. ok is
-// false when the ChangeSet shows no evidence for the signal.
-type rule func(repository string, cs *collection.ChangeSet, arch *architecture.Architecture) (s Signal, ok bool, err error)
+// rule detects one signal type in a ChangeSet. ok is false when the ChangeSet
+// shows no evidence for the signal.
+type rule func(cs *collection.ChangeSet, arch *architecture.Architecture) (s Signal, ok bool, err error)
 
 // rules run in this order on every ChangeSet; signals keep the order.
 var rules = []rule{
@@ -78,7 +78,7 @@ func Detect(repo collection.Repository, arch *architecture.Architecture) ([]Sign
 	for i := range repo.ChangeSets {
 		cs := &repo.ChangeSets[i]
 		for _, r := range rules {
-			s, ok, err := r(repo.Name, cs, arch)
+			s, ok, err := r(cs, arch)
 			if err != nil {
 				return nil, fmt.Errorf("change set %s: %w", cs.ID, err)
 			}
@@ -90,11 +90,11 @@ func Detect(repo collection.Repository, arch *architecture.Architecture) ([]Sign
 	return signals, nil
 }
 
-func crossContextChange(repository string, cs *collection.ChangeSet, arch *architecture.Architecture) (Signal, bool, error) {
+func crossContextChange(cs *collection.ChangeSet, arch *architecture.Architecture) (Signal, bool, error) {
 	var evidence []Evidence
 	contexts := map[string]bool{}
 	for _, f := range cs.Files {
-		scope, ok, err := arch.Resolve(repository, f.Path)
+		scope, ok, err := arch.Resolve(f.Path)
 		if err != nil {
 			return Signal{}, false, err
 		}
@@ -116,7 +116,7 @@ func crossContextChange(repository string, cs *collection.ChangeSet, arch *archi
 }
 
 func artifactChanged(kind architecture.ArtifactKind, signal Type) rule {
-	return func(_ string, cs *collection.ChangeSet, arch *architecture.Architecture) (Signal, bool, error) {
+	return func(cs *collection.ChangeSet, arch *architecture.Architecture) (Signal, bool, error) {
 		var evidence []Evidence
 		paths := map[string]bool{}
 		for _, f := range cs.Files {
@@ -139,11 +139,11 @@ func artifactChanged(kind architecture.ArtifactKind, signal Type) rule {
 	}
 }
 
-func componentCreatedOrRemoved(repository string, cs *collection.ChangeSet, arch *architecture.Architecture) (Signal, bool, error) {
+func componentCreatedOrRemoved(cs *collection.ChangeSet, arch *architecture.Architecture) (Signal, bool, error) {
 	var evidence []Evidence
 	var facts []string
 	for _, d := range cs.Directories {
-		scope, ok, err := arch.Resolve(repository, d.Path)
+		scope, ok, err := arch.Resolve(d.Path)
 		if err != nil {
 			return Signal{}, false, err
 		}

@@ -201,5 +201,5 @@ artifacts: {public-contract: [], persistence-schema: [], deployment: [], securit
 	require.NoError(t, err)
 
 	_, err = detection.Detect(collection.Repository{Name: "shop", ChangeSets: []collection.ChangeSet{files(modified("payments/refunds/r.go"))}}, arch)
-	require.ErrorContains(t, err, "change set PAY-1: payments/refunds/r.go in repository shop maps to several contexts")
+	require.ErrorContains(t, err, "change set PAY-1: payments/refunds/r.go maps to several contexts")
 }

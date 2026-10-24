@@ -9,10 +9,7 @@ systems:
     contexts:
       payments:
         # A file belongs to this context when its path matches one of the
-        # paths below, or, when no context path matches, when it is in one of
-        # these repositories. Repository names are top-level directory names.
-        repositories:
-          - payments
+        # paths below.
         paths:
           - "payments/**"
         # A component owns its directory and everything below it. Creating or
@@ -24,8 +21,6 @@ systems:
             path: payments/fraud
 
       customer:
-        repositories:
-          - customer
         paths:
           - "customer/**"
         components:

@@ -82,7 +82,7 @@ tasks:
 # ---- running stuff ----
 
   run:
-    desc: 'Run the application (for development), usage: task run -- scan --repo . --architecture architecture.yaml --since 7d'
+    desc: 'Run the application (for development), usage: task run -- scan --repo . --architecture examples/architecture.yaml --since 7d'
     silent: true
     cmds:
       - go run . {{.CLI_ARGS}}

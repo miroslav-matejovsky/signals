@@ -15,18 +15,16 @@ systems:
   commerce:
     contexts:
       payments:
-        repositories: [payments]
         paths: ["payments/**"]
         components:
           payments-api:
             path: payments/api
       customer:
-        repositories: [customer]
         paths: ["customer/**"]
   platform:
     contexts:
       identity:
-        repositories: [identity]
+        paths: ["identity/**"]
 artifacts:
   public-contract: ["**/openapi.yaml", "**/*.proto"]
   persistence-schema: ["**/migrations/**"]
@@ -48,25 +46,23 @@ func TestResolve(t *testing.T) {
 	paymentsAPI.Component = architecture.Component{Name: "payments-api", Path: "payments/api"}
 
 	tests := []struct {
-		name       string
-		repository string
-		path       string
-		want       architecture.Scope
-		wantOK     bool
+		name   string
+		path   string
+		want   architecture.Scope
+		wantOK bool
 	}{
-		{name: "path in monorepo", repository: "shop", path: "payments/service.go", want: payments, wantOK: true},
-		{name: "context directory itself", repository: "shop", path: "payments", want: payments, wantOK: true},
-		{name: "component file", repository: "shop", path: "payments/api/openapi.yaml", want: paymentsAPI, wantOK: true},
-		{name: "component directory", repository: "shop", path: "payments/api", want: paymentsAPI, wantOK: true},
-		{name: "component name prefix is not the component", repository: "shop", path: "payments/apiary/x.go", want: payments, wantOK: true},
-		{name: "repository of polyrepo", repository: "identity", path: "src/login.go", want: architecture.Scope{System: "platform", Context: "identity"}, wantOK: true},
-		{name: "path takes precedence over repository", repository: "payments", path: "customer/profile.go", want: architecture.Scope{System: "commerce", Context: "customer"}, wantOK: true},
-		{name: "undeclared path", repository: "shop", path: "docs/readme.md"},
-		{name: "glob does not match prefix of segment", repository: "shop", path: "paymentsx/a.go"},
+		{name: "path in context", path: "payments/service.go", want: payments, wantOK: true},
+		{name: "context directory itself", path: "payments", want: payments, wantOK: true},
+		{name: "component file", path: "payments/api/openapi.yaml", want: paymentsAPI, wantOK: true},
+		{name: "component directory", path: "payments/api", want: paymentsAPI, wantOK: true},
+		{name: "component name prefix is not the component", path: "payments/apiary/x.go", want: payments, wantOK: true},
+		{name: "context of another system", path: "identity/login.go", want: architecture.Scope{System: "platform", Context: "identity"}, wantOK: true},
+		{name: "undeclared path", path: "docs/readme.md"},
+		{name: "glob does not match prefix of segment", path: "paymentsx/a.go"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok, err := a.Resolve(tt.repository, tt.path)
+			got, ok, err := a.Resolve(tt.path)
 			require.NoError(t, err)
 			require.Equal(t, tt.wantOK, ok)
 			require.Equal(t, tt.want, got)
@@ -85,10 +81,10 @@ systems:
         paths: ["payments/refunds/**"]
 artifacts: {public-contract: [], persistence-schema: [], deployment: [], security: []}
 `)
-	_, _, err := a.Resolve("shop", "payments/refunds/r.go")
+	_, _, err := a.Resolve("payments/refunds/r.go")
 	require.ErrorContains(t, err, "maps to several contexts: commerce/payments, commerce/refunds")
 
-	_, ok, err := a.Resolve("shop", "payments/p.go")
+	_, ok, err := a.Resolve("payments/p.go")
 	require.NoError(t, err)
 	require.True(t, ok)
 }
@@ -138,8 +134,8 @@ func TestParseRejectsInvalidDeclaration(t *testing.T) {
 	}{
 		{
 			name:    "unknown field",
-			yaml:    "systems: {s: {contexts: {c: {repositorys: [r]}}}}\n" + artifacts,
-			wantErr: "field repositorys not found",
+			yaml:    "systems: {s: {contexts: {c: {repositories: [r]}}}}\n" + artifacts,
+			wantErr: "field repositories not found",
 		},
 		{
 			name:    "no systems",
@@ -152,14 +148,9 @@ func TestParseRejectsInvalidDeclaration(t *testing.T) {
 			wantErr: "system s: no contexts declared",
 		},
 		{
-			name:    "context without repositories or paths",
+			name:    "context without paths",
 			yaml:    "systems: {s: {contexts: {c: {}}}}\n" + artifacts,
-			wantErr: "context s/c: no repositories or paths declared",
-		},
-		{
-			name:    "empty repository",
-			yaml:    "systems: {s: {contexts: {c: {repositories: ['']}}}}\n" + artifacts,
-			wantErr: "context s/c: empty repository name",
+			wantErr: "context s/c: no paths declared",
 		},
 		{
 			name:    "malformed path pattern",
@@ -211,7 +202,7 @@ func TestLoad(t *testing.T) {
 
 	a, err := architecture.Load(file)
 	require.NoError(t, err)
-	_, ok, err := a.Resolve("shop", "customer/profile.go")
+	_, ok, err := a.Resolve("customer/profile.go")
 	require.NoError(t, err)
 	require.True(t, ok)
 

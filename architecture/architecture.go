@@ -67,10 +67,9 @@ type Architecture struct {
 }
 
 type boundedContext struct {
-	system       string
-	name         string
-	repositories []string
-	paths        []string
+	system string
+	name   string
+	paths  []string
 	// components are sorted by name and never nest.
 	components []Component
 }
@@ -99,9 +98,8 @@ type systemDocument struct {
 }
 
 type contextDocument struct {
-	Repositories []string                     `yaml:"repositories"`
-	Paths        []string                     `yaml:"paths"`
-	Components   map[string]componentDocument `yaml:"components"`
+	Paths      []string                     `yaml:"paths"`
+	Components map[string]componentDocument `yaml:"components"`
 }
 
 type componentDocument struct {
@@ -110,8 +108,8 @@ type componentDocument struct {
 
 // Parse decodes and validates an architecture declaration.
 //
-// It rejects unknown fields, systems without contexts, contexts without
-// repositories or paths, invalid patterns, component paths that are not clean
+// It rejects unknown fields, systems without contexts, contexts without paths,
+// invalid patterns, component paths that are not clean
 // relative directories or that nest, unknown artifact kinds, and missing
 // artifact kinds. Every artifact kind must be declared explicitly; an empty
 // list declares that no path is an artifact of that kind.
@@ -155,16 +153,13 @@ func parseContexts(systems map[string]systemDocument) ([]boundedContext, error) 
 }
 
 func parseContext(system, name string, doc contextDocument) (boundedContext, error) {
-	if len(doc.Repositories) == 0 && len(doc.Paths) == 0 {
-		return boundedContext{}, errors.New("no repositories or paths declared")
-	}
-	if slices.Contains(doc.Repositories, "") {
-		return boundedContext{}, errors.New("empty repository name")
+	if len(doc.Paths) == 0 {
+		return boundedContext{}, errors.New("no paths declared")
 	}
 	if err := validatePatterns(doc.Paths); err != nil {
 		return boundedContext{}, err
 	}
-	bc := boundedContext{system: system, name: name, repositories: doc.Repositories, paths: doc.Paths}
+	bc := boundedContext{system: system, name: name, paths: doc.Paths}
 	for _, cname := range slices.Sorted(maps.Keys(doc.Components)) {
 		p := doc.Components[cname].Path
 		if !cleanRelativeDir(p) {
@@ -211,17 +206,14 @@ func within(p, dir string) bool {
 	return p == dir || strings.HasPrefix(p, dir+"/")
 }
 
-// Resolve maps a slash-separated path, relative to the root of repository, to
-// its declared scope.
+// Resolve maps a slash-separated path, relative to the repository root, to its
+// declared scope.
 //
-// A path belongs to the context whose paths match it. When no context path
-// matches, it belongs to the context that lists the repository. Path matches
-// take precedence because they are more specific. ok is false when the path is
-// outside the declared architecture. A path that belongs to more than one
-// context at the same precedence is an ambiguous declaration and returns an
-// error.
-func (a *Architecture) Resolve(repository, p string) (scope Scope, ok bool, err error) {
-	bc, ok, err := a.context(repository, p)
+// A path belongs to the context whose paths match it. ok is false when the
+// path is outside the declared architecture. A path that belongs to more than
+// one context is an ambiguous declaration and returns an error.
+func (a *Architecture) Resolve(p string) (scope Scope, ok bool, err error) {
+	bc, ok, err := a.context(p)
 	if err != nil || !ok {
 		return Scope{}, false, err
 	}
@@ -235,12 +227,12 @@ func (a *Architecture) Resolve(repository, p string) (scope Scope, ok bool, err 
 	return scope, true, nil
 }
 
-func (a *Architecture) context(repository, p string) (boundedContext, bool, error) {
-	matches := a.contextsWhere(func(bc *boundedContext) bool {
-		return slices.ContainsFunc(bc.paths, func(pattern string) bool { return match(pattern, p) })
-	})
-	if len(matches) == 0 {
-		matches = a.contextsWhere(func(bc *boundedContext) bool { return slices.Contains(bc.repositories, repository) })
+func (a *Architecture) context(p string) (boundedContext, bool, error) {
+	var matches []boundedContext
+	for _, bc := range a.contexts {
+		if slices.ContainsFunc(bc.paths, func(pattern string) bool { return match(pattern, p) }) {
+			matches = append(matches, bc)
+		}
 	}
 	switch len(matches) {
 	case 0:
@@ -252,18 +244,8 @@ func (a *Architecture) context(repository, p string) (boundedContext, bool, erro
 		for i, bc := range matches {
 			names[i] = bc.system + "/" + bc.name
 		}
-		return boundedContext{}, false, fmt.Errorf("%s in repository %s maps to several contexts: %s", p, repository, strings.Join(names, ", "))
+		return boundedContext{}, false, fmt.Errorf("%s maps to several contexts: %s", p, strings.Join(names, ", "))
 	}
-}
-
-func (a *Architecture) contextsWhere(keep func(*boundedContext) bool) []boundedContext {
-	var matches []boundedContext
-	for i := range a.contexts {
-		if keep(&a.contexts[i]) {
-			matches = append(matches, a.contexts[i])
-		}
-	}
-	return matches
 }
 
 // Classify returns the artifacts a slash-separated path belongs to, at most

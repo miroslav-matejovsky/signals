@@ -59,8 +59,7 @@ type ChangeSet struct {
 
 // Repository is the result of collecting one local Git repository.
 type Repository struct {
-	// Name is the base name of the repository's top-level directory. The
-	// architecture declaration refers to repositories by this name.
+	// Name is the base name of the repository's top-level directory.
 	Name string
 	// ChangeSets are ordered by their newest commit, newest first.
 	ChangeSets []ChangeSet
