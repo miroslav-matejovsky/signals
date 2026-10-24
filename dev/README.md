@@ -2,7 +2,6 @@
 
 Working records used to understand and evolve this repository. This is not user-facing or technical documentation.
 
-
 Each folder has a `README.md` describing its contents and expected format.
 
 | Folder               | Purpose                                                                                    |
